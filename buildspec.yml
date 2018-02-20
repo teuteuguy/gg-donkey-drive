@@ -16,7 +16,7 @@ phases:
       - GITHUB_REPO_URL=`echo $INSTANCE_TAGS | jq -rc '.Tags[] | select(.Key == "github") | .Value'`
       - GG_GROUP_NAME=`echo $INSTANCE_TAGS | jq -rc '.Tags[] | select(.Key == "gg-group") | .Value'`
       - INSTANCE_ID=`echo $INSTANCE_TAGS | jq -rc '.ResourceARN | split("/")[1]'`
-      - echo $GITHUB_REPO_URL, $GG_GROUP_NAME, $INSTANCE_ID
+      - echo $GITHUB_REPO_URL, $GG_GROUP_NAME, $INSTANCE_ID, $DEV_PIPELINE_NAME
   pre_build:
     commands:
       - echo Getting the AWS IoT Get Credentials endpoint
