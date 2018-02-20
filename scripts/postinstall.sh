@@ -4,6 +4,8 @@ set -e
 
 echo Post Install Script
 
+echo $DEV_PIPELINE_NAME
+
 apt-get install -y jq curl zip
 
 echo Get temporary credentials from AWS IoT:
@@ -22,7 +24,6 @@ export AWS_SESSION_TOKEN=`echo $CREDS | jq -r ".credentials.sessionToken"`
 # echo $IOT_GG_GROUP_NAME
 # echo $AWS_ACCESS_KEY_ID, $AWS_SECRET_ACCESS_KEY, $AWS_SESSION_TOKEN
 
-echo $DEV_PIPELINE_NAME
 LAMBDA_FUNCTION_ARN=`$AWS_COMMAND resourcegroupstaggingapi get-resources --region $AWS_REGION --tag-filters "Key=gg-dev-pipeline,Values=$DEV_PIPELINE_NAME" "Key=type,Values=lambda" --query ResourceTagMappingList[].ResourceARN --output text`
 echo $LAMBDA_FUNCTION_ARN
 LAMBDA_FUNCTION_NAME=$($AWS_COMMAND lambda list-functions --region $AWS_REGION --query "Functions[?FunctionArn==\`$LAMBDA_FUNCTION_ARN\`].FunctionName" --output text)
