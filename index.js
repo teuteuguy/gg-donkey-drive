@@ -1,5 +1,7 @@
 'use strict';
 
+console.log('Top of the function');
+
 const i2cBus = require("i2c-bus");
 const Pca9685Driver = require("pca9685").Pca9685Driver;
 const names = require("./device-names.json");
