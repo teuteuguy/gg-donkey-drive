@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install --upgrade awscli
+      - wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+      - chmod +x jq-linux64
+      - mv jq-linux64 /usr/bin/jq
+      - jq --version
+      - echo Reading tags from our Managed Pi
+      - INSTANCE_TAGS=`aws resourcegroupstaggingapi get-resources --region $AWS_REGION --tag-filters Key=gg-dev-pipeline,Key=type,Values=ManagedInstance --query ResourceTagMappingList[0]`
+      - echo $INSTANCE_TAGS
+      - GITHUB_REPO_URL=`echo $INSTANCE_TAGS | jq -rc '.Tags[] | select(.Key == "github") | .Value'`
+      - GG_GROUP_NAME=`echo $INSTANCE_TAGS | jq -rc '.Tags[] | select(.Key == "gg-group") | .Value'`
+      - INSTANCE_ID=`echo $INSTANCE_TAGS | jq -rc '.ResourceARN | split("/")[1]'`
+      - echo $GITHUB_REPO_URL, $GG_GROUP_NAME, $INSTANCE_ID
+  pre_build:
+    commands:
+      - echo Getting the AWS IoT Get Credentials endpoint
+      - IOT_CREDENTIAL_ENDPOINT=`aws iot describe-endpoint --endpoint-type iot:CredentialProvider --region $AWS_REGION --output text`
+  build:
+    commands:
+      - echo Running the build on the SSM managed device
+      - SSM_COMMAND_ID=`aws ssm send-command --region $AWS_REGION --instance-ids "$INSTANCE_ID" --document-name "rpi-build" --parameters gitRepositoryURL="$GITHUB_REPO_URL",iotCredentialEndpoint="$IOT_CREDENTIAL_ENDPOINT",ggGroupName="$GG_GROUP_NAME",devPipelineName="${CODEBUILD_INITIATOR#\"codepipeline/\"}" --query Command.CommandId --output text`
+      - SSM_COMMAND_DONE=false
+      - for i in `seq 1 20`; do SSM_STATUS=`aws ssm get-command-invocation --instance-id "$INSTANCE_ID" --command-id $SSM_COMMAND_ID --region $AWS_REGION --query Status --output text`; echo $SSM_COMMAND_ID $SSM_STATUS $i; case $SSM_STATUS in Pending|InProgress|Delayed) echo "WAITING"; sleep 5 ;; *) echo "DONE"; SSM_COMMAND_DONE=true; break ;; esac done
+      - if $SSM_COMMAND_DONE ; then exit 0; else exit 1; fi
+

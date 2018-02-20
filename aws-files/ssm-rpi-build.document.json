@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.2",
+  "description": "Git clone a Git repo and NPM Install it",
+  "parameters": {
+    "gitRepositoryURL": {
+      "type": "String",
+      "default": "",
+      "description": "The repo that will be used."
+    },
+    "iotCredentialEndpoint": {
+      "type": "String",
+      "default": "",
+      "description": "The AWS IOT get credentials endpoint."
+    },
+    "ggGroupName": {
+      "type": "String",
+      "default": "",
+      "description": "The GG Group Name"
+    },
+    "devPipelineName": { "type": "String", "default": "", "description": "Name of the dev pipeline name" }
+  },
+  "runtimeConfig": {
+    "aws:runShellScript": {
+      "properties": [
+        {
+          "id": "0.aws:runShellScript",
+          "runCommand": [
+            "#!/bin/bash",
+            "set -e",
+            "rm -rf /tmp/repo",
+            "git clone {{ gitRepositoryURL }} /tmp/repo",
+            "cd /tmp/repo",
+            "export IOT_CREDENTIAL_ENDPOINT={{ iotCredentialEndpoint }}",
+            "export IOT_GG_GROUP_NAME={{ ggGroupName }}",
+            "export DEV_PIPELINE_NAME={{ devPipelineName }}",
+            "make"
+          ]
+        }
+      ]
+    }
+  }
+}
