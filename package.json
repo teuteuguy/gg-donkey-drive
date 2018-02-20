@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Greengrass Lambda function to control the Donkey car servos",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "i2c-bus": "^2.0.0",
+    "pca9685": "^4.0.3"
+  },
   "devDependencies": {},
   "scripts": {
     "postinstall": "scripts/postinstall.sh"
