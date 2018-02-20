@@ -4,7 +4,7 @@ set -e
 
 echo Post Install Script
 
-echo $DEV_PIPELINE_NAME
+echo DEV_PIPELINE_NAME: $DEV_PIPELINE_NAME
 
 apt-get install -y jq curl zip
 
